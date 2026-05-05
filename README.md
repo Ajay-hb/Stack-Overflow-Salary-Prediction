@@ -22,7 +22,7 @@
 ## 🚀 Live Demo & Code
 
 <p align="center">
-  <a href="https://your-app-name.streamlit.app](https://ajay-hb-stack-overflow-salary-prediction.streamlit.app/" target="_blank">
+  <a href="https://ajay-hb-stack-overflow-salary-prediction.streamlit.app/" target="_blank">
     <img src="https://img.shields.io/badge/🚀%20Live%20App-Open-success?style=for-the-badge"/>
   </a>
   <a href="https://github.com/Ajay-b/Stack-Overflow-Salary-Prediction" target="_blank">
