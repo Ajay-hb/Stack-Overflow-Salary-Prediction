@@ -38,7 +38,7 @@ webframes = extract("WebframeHaveWorkedWith")
 # ================================
 st.title("💼 Advanced Salary Predictor")
 
-# Numeric inputs
+# Numeric
 exp = st.slider("Work Experience", 0, 50, 5)
 code = st.slider("Years Coding", 0, 50, 7)
 age = st.slider("Age", 15, 75, 30)
@@ -67,11 +67,11 @@ web = st.multiselect("Web Frameworks", webframes)
 # ================================
 if st.button("Predict Salary"):
 
-    # Create empty input with ALL columns
+    # Create full feature row
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
     # -------------------------------
-    # Numeric features
+    # Numeric
     # -------------------------------
     if "WorkExp" in MODEL_COLUMNS:
         input_df["WorkExp"] = float(exp)
@@ -107,7 +107,7 @@ if st.button("Predict Salary"):
             input_df[col] = 1
 
     # -------------------------------
-    # IC or Manager (special case)
+    # IC or Manager
     # -------------------------------
     if icpm == "People manager":
         if "ICorPM_People manager" in MODEL_COLUMNS:
@@ -131,14 +131,12 @@ if st.button("Predict Salary"):
                 input_df[col] = 1
 
     # -------------------------------
-    # FINAL FIX (NO MORE ERRORS)
+    # FINAL FIX (IMPORTANT)
     # -------------------------------
     input_df = input_df.reindex(columns=MODEL_COLUMNS, fill_value=0)
     input_df = input_df.astype(float)
 
-    # -------------------------------
-    # PREDICT
-    # -------------------------------
-    pred = model.predict(input_df.to_numpy())[0]
+    # 🔥 IMPORTANT: DO NOT use .to_numpy()
+    pred = model.predict(input_df)[0]
 
     st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
