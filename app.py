@@ -8,7 +8,7 @@ import re
 # ================================
 @st.cache_resource
 def load_artifacts():
-    model = joblib.load("salary_stack_model.joblib")
+    model = joblib.load("salary_model_compressed.joblib")
     columns = joblib.load("model_columns.joblib")
     return model, columns
 
