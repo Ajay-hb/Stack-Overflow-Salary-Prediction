@@ -20,7 +20,7 @@ model, MODEL_COLUMNS = load_artifacts()
 def extract(prefix):
     return sorted([c.replace(f"{prefix}_", "") for c in MODEL_COLUMNS if c.startswith(f"{prefix}_")])
 
-# Extract all options (same as your widget)
+# Extract options
 countries = extract("Country")
 ed_levels = extract("EdLevel")
 org_sizes = extract("OrgSize")
@@ -39,7 +39,7 @@ webframes = extract("WebframeHaveWorkedWith")
 # ================================
 st.title("💼 Advanced Salary Predictor")
 
-# Numeric
+# Numeric inputs
 exp = st.slider("Work Experience", 0, 50, 5)
 code = st.slider("Years Coding", 0, 50, 7)
 age = st.slider("Age", 15, 75, 30)
@@ -64,18 +64,34 @@ plat = st.multiselect("Platforms", platforms)
 web = st.multiselect("Web Frameworks", webframes)
 
 # ================================
-# PREDICT
+# PREDICTION
 # ================================
 if st.button("Predict Salary"):
 
+    # Create empty input
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
-    # Numeric
-    input_df["WorkExp"] = float(exp)
-    input_df["YearsCode"] = float(code)
-    input_df["Age_Numeric"] = float(age)
+    # -------------------------------
+    # Numeric features (IMPORTANT: match training names)
+    # -------------------------------
+    if "WorkExp" in input_df.columns:
+        input_df["WorkExp"] = float(exp)
 
+    if "YearsCode" in input_df.columns:
+        input_df["YearsCode"] = float(code)
+
+    if "YearsCodePro" in input_df.columns:
+        input_df["YearsCodePro"] = float(code)
+
+    if "Age_Numeric" in input_df.columns:
+        input_df["Age_Numeric"] = float(age)
+
+    if "Age" in input_df.columns:
+        input_df["Age"] = float(age)
+
+    # -------------------------------
     # Single select encoding
+    # -------------------------------
     single_map = {
         "Country": country,
         "EdLevel": ed,
@@ -91,12 +107,16 @@ if st.button("Predict Salary"):
         if col in input_df.columns:
             input_df[col] = 1
 
-    # IC or PM logic
+    # -------------------------------
+    # IC or Manager (special case)
+    # -------------------------------
     if icpm == "People manager":
         if "ICorPM_People manager" in input_df.columns:
             input_df["ICorPM_People manager"] = 1
 
+    # -------------------------------
     # Multi-select encoding
+    # -------------------------------
     multi_map = {
         "DevType": dev,
         "LanguageHaveWorkedWith": lang,
@@ -111,10 +131,20 @@ if st.button("Predict Salary"):
             if col in input_df.columns:
                 input_df[col] = 1
 
-    # Clean column names (same as notebook)
-    input_df.columns = [re.sub(r'[^\w]', '', c) for c in input_df.columns]
+    # -------------------------------
+    # CLEAN COLUMN NAMES (important)
+    # -------------------------------
+    input_df.columns = [re.sub(r"[^\w]", "", c) for c in input_df.columns]
 
-    # Predict
-    pred = model.predict(input_df)[0]
+    # -------------------------------
+    # FINAL FIXES (THIS SOLVES YOUR ERROR)
+    # -------------------------------
+    input_df = input_df[MODEL_COLUMNS]          # ensure order
+    input_df = input_df.astype(float)           # remove object dtype
+
+    # -------------------------------
+    # PREDICT
+    # -------------------------------
+    pred = model.predict(input_df.to_numpy())[0]
 
     st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
