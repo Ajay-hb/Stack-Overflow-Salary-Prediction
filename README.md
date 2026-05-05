@@ -64,3 +64,44 @@ C --> D[Multi-Label Encoding]
 D --> E[One-Hot Encoding]
 E --> F[XGBoost Model]
 F --> G[Prediction App]
+
+
+
+## 📈 Key Insights
+
+- 💰 Experience is the strongest salary predictor  
+- 🌍 Country significantly impacts compensation  
+- ☁️ Cloud & backend skills increase salary  
+- 🤖 AI-related technologies correlate with higher pay  
+- 🧠 Multi-skill developers earn significantly more  
+
+---
+
+## 💼 Business Impact
+
+This system enables:
+
+- 🎯 Developers → Estimate market salary  
+- 📊 Companies → Benchmark compensation  
+- 📉 Reduce uncertainty in salary expectations  
+- 🚀 Enable data-driven career decisions  
+
+---
+
+## 🛠️ Tech Stack
+
+<p align="center">
+  <img src="https://skillicons.dev/icons?i=python,pandas,numpy,sklearn,streamlit" />
+</p>
+
+- Python  
+- Pandas / NumPy  
+- Scikit-learn  
+- XGBoost  
+- Streamlit  
+- NLP Techniques  
+
+---
+
+## 📂 Project Structure
+
