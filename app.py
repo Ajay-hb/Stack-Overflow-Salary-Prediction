@@ -1,7 +1,6 @@
 import streamlit as st
 import joblib
 import pandas as pd
-import re
 
 # ================================
 # LOAD MODEL + COLUMNS
@@ -68,25 +67,25 @@ web = st.multiselect("Web Frameworks", webframes)
 # ================================
 if st.button("Predict Salary"):
 
-    # Create empty input
+    # Create empty input with ALL columns
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
     # -------------------------------
-    # Numeric features (IMPORTANT: match training names)
+    # Numeric features
     # -------------------------------
-    if "WorkExp" in input_df.columns:
+    if "WorkExp" in MODEL_COLUMNS:
         input_df["WorkExp"] = float(exp)
 
-    if "YearsCode" in input_df.columns:
+    if "YearsCode" in MODEL_COLUMNS:
         input_df["YearsCode"] = float(code)
 
-    if "YearsCodePro" in input_df.columns:
+    if "YearsCodePro" in MODEL_COLUMNS:
         input_df["YearsCodePro"] = float(code)
 
-    if "Age_Numeric" in input_df.columns:
+    if "Age_Numeric" in MODEL_COLUMNS:
         input_df["Age_Numeric"] = float(age)
 
-    if "Age" in input_df.columns:
+    if "Age" in MODEL_COLUMNS:
         input_df["Age"] = float(age)
 
     # -------------------------------
@@ -104,14 +103,14 @@ if st.button("Predict Salary"):
 
     for feat, val in single_map.items():
         col = f"{feat}_{val}"
-        if col in input_df.columns:
+        if col in MODEL_COLUMNS:
             input_df[col] = 1
 
     # -------------------------------
     # IC or Manager (special case)
     # -------------------------------
     if icpm == "People manager":
-        if "ICorPM_People manager" in input_df.columns:
+        if "ICorPM_People manager" in MODEL_COLUMNS:
             input_df["ICorPM_People manager"] = 1
 
     # -------------------------------
@@ -128,19 +127,14 @@ if st.button("Predict Salary"):
     for feat, values in multi_map.items():
         for v in values:
             col = f"{feat}_{v}"
-            if col in input_df.columns:
+            if col in MODEL_COLUMNS:
                 input_df[col] = 1
 
     # -------------------------------
-    # CLEAN COLUMN NAMES (important)
+    # FINAL FIX (NO MORE ERRORS)
     # -------------------------------
-    input_df.columns = [re.sub(r"[^\w]", "", c) for c in input_df.columns]
-
-    # -------------------------------
-    # FINAL FIXES (THIS SOLVES YOUR ERROR)
-    # -------------------------------
-    input_df = input_df[MODEL_COLUMNS]          # ensure order
-    input_df = input_df.astype(float)           # remove object dtype
+    input_df = input_df.reindex(columns=MODEL_COLUMNS, fill_value=0)
+    input_df = input_df.astype(float)
 
     # -------------------------------
     # PREDICT
