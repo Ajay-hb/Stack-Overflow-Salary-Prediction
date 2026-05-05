@@ -22,7 +22,7 @@ except Exception as e:
     st.error(f"Error loading model assets: {e}")
     st.stop()
 
-st.title("Advanced Salary Predictor (SO 2024)")
+st.title("Advanced Salary Predictor")
 st.markdown("Estimate your annual compensation based on the latest developer survey data.")
 
 st.sidebar.header("Professional Profile")
