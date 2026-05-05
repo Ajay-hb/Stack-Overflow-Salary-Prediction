@@ -17,12 +17,12 @@ def clean_col_names(df):
 # 3. Load the Model
 @st.cache_resource
 def load_model():
-    return joblib.load('salary_stack_model.joblib')
+    return joblib.load('salary_model_compressed.joblib')
 
 try:
     model = load_model()
 except:
-    st.error("Model file 'salary_stack_model.joblib' not found.")
+    st.error("Model file 'salary_model_compressed.joblib' not found.")
     st.stop()
 
 st.title("Advanced Salary Predictor (SO 2024)")
