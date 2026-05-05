@@ -19,7 +19,7 @@ model, MODEL_COLUMNS = load_artifacts()
 def extract(prefix):
     return sorted([c.replace(f"{prefix}_", "") for c in MODEL_COLUMNS if c.startswith(f"{prefix}_")])
 
-# Extract options
+# Options
 countries = extract("Country")
 ed_levels = extract("EdLevel")
 org_sizes = extract("OrgSize")
@@ -36,14 +36,12 @@ webframes = extract("WebframeHaveWorkedWith")
 # ================================
 # UI
 # ================================
-st.title("💼 Advanced Salary Predictor")
+st.title("💼 Salary Predictor")
 
-# Numeric
 exp = st.slider("Work Experience", 0, 50, 5)
 code = st.slider("Years Coding", 0, 50, 7)
 age = st.slider("Age", 15, 75, 30)
 
-# Single select
 country = st.selectbox("Country", countries)
 ed = st.selectbox("Education", ed_levels)
 org = st.selectbox("Company Size", org_sizes)
@@ -52,10 +50,8 @@ emp = st.selectbox("Employment Type", employment)
 branch = st.selectbox("Main Branch", mainbranch)
 ais = st.selectbox("AI Adoption", aiselect)
 
-# Special
 icpm = st.selectbox("IC or Manager", ["Individual contributor", "People manager"])
 
-# Multi-select
 dev = st.multiselect("Developer Roles", devtypes)
 lang = st.multiselect("Languages", languages)
 db = st.multiselect("Databases", databases)
@@ -63,16 +59,14 @@ plat = st.multiselect("Platforms", platforms)
 web = st.multiselect("Web Frameworks", webframes)
 
 # ================================
-# PREDICTION
+# PREDICT
 # ================================
 if st.button("Predict Salary"):
 
-    # Create full feature row
+    # Create correct feature vector
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
-    # -------------------------------
     # Numeric
-    # -------------------------------
     if "WorkExp" in MODEL_COLUMNS:
         input_df["WorkExp"] = float(exp)
 
@@ -88,10 +82,8 @@ if st.button("Predict Salary"):
     if "Age" in MODEL_COLUMNS:
         input_df["Age"] = float(age)
 
-    # -------------------------------
-    # Single select encoding
-    # -------------------------------
-    single_map = {
+    # ONE-HOT ONLY (IMPORTANT)
+    for feat, val in {
         "Country": country,
         "EdLevel": ed,
         "OrgSize": org,
@@ -99,23 +91,17 @@ if st.button("Predict Salary"):
         "Employment": emp,
         "MainBranch": branch,
         "AISelect": ais
-    }
-
-    for feat, val in single_map.items():
+    }.items():
         col = f"{feat}_{val}"
         if col in MODEL_COLUMNS:
             input_df[col] = 1
 
-    # -------------------------------
-    # IC or Manager
-    # -------------------------------
+    # IC or PM
     if icpm == "People manager":
         if "ICorPM_People manager" in MODEL_COLUMNS:
             input_df["ICorPM_People manager"] = 1
 
-    # -------------------------------
-    # Multi-select encoding
-    # -------------------------------
+    # Multi-select
     multi_map = {
         "DevType": dev,
         "LanguageHaveWorkedWith": lang,
@@ -130,13 +116,11 @@ if st.button("Predict Salary"):
             if col in MODEL_COLUMNS:
                 input_df[col] = 1
 
-    # -------------------------------
-    # FINAL FIX (IMPORTANT)
-    # -------------------------------
+    # Final alignment
     input_df = input_df.reindex(columns=MODEL_COLUMNS, fill_value=0)
     input_df = input_df.astype(float)
 
-    # 🔥 IMPORTANT: DO NOT use .to_numpy()
+    # Predict (NO numpy)
     pred = model.predict(input_df)[0]
 
-    st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
+    st.success(f"💰 Estimated Salary: ${pred:,.2f}")
