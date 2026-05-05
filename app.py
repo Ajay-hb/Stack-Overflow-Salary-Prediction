@@ -7,21 +7,27 @@ import pandas as pd
 # ================================
 @st.cache_resource
 def load_model():
-    model = joblib.load("salary_model_compressed.joblib")
-    return model
+    return joblib.load("salary_model_compressed.joblib")
 
 model = load_model()
 
-# 🔥 IMPORTANT: get exact feature names from model
+# 🔥 Get exact features from model
 MODEL_COLUMNS = model.get_booster().feature_names
 
 # ================================
-# HELPER FUNCTION
+# ROBUST EXTRACT FUNCTION
 # ================================
 def extract(prefix):
-    return sorted([c.replace(f"{prefix}_", "") for c in MODEL_COLUMNS if c.startswith(f"{prefix}_")])
+    values = list(set([
+        col.split(prefix + "_", 1)[1]
+        for col in MODEL_COLUMNS
+        if col.startswith(prefix + "_")
+    ]))
+    return sorted(values)
 
-# Extract dropdown options
+# ================================
+# EXTRACT OPTIONS
+# ================================
 countries = extract("Country")
 ed_levels = extract("EdLevel")
 org_sizes = extract("OrgSize")
@@ -34,6 +40,27 @@ languages = extract("LanguageHaveWorkedWith")
 databases = extract("DatabaseHaveWorkedWith")
 platforms = extract("PlatformHaveWorkedWith")
 webframes = extract("WebframeHaveWorkedWith")
+
+# ================================
+# FALLBACK (IMPORTANT)
+# ================================
+if not countries:
+    countries = ["India", "United States of America", "Germany"]
+
+if not ed_levels:
+    ed_levels = ["Bachelor’s degree", "Master’s degree"]
+
+if not org_sizes:
+    org_sizes = ["20 to 99 employees", "100 to 499 employees"]
+
+if not remotework:
+    remotework = ["Remote", "Hybrid", "In-person"]
+
+if not employment:
+    employment = ["Employed", "Student"]
+
+if not devtypes:
+    devtypes = ["Developer, full-stack", "Developer, back-end"]
 
 # ================================
 # UI
@@ -49,8 +76,9 @@ ed = st.selectbox("Education", ed_levels)
 org = st.selectbox("Company Size", org_sizes)
 rem = st.selectbox("Remote Work", remotework)
 emp = st.selectbox("Employment", employment)
-branch = st.selectbox("Main Branch", mainbranch)
-ais = st.selectbox("AI Usage", aiselect)
+
+branch = st.selectbox("Main Branch", mainbranch if mainbranch else ["Developer"])
+ais = st.selectbox("AI Usage", aiselect if aiselect else ["Yes", "No"])
 
 icpm = st.selectbox("IC or Manager", ["Individual contributor", "People manager"])
 
@@ -65,7 +93,7 @@ web = st.multiselect("Web Frameworks", webframes)
 # ================================
 if st.button("Predict Salary"):
 
-    # Create exact feature vector
+    # Create feature vector
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
     # Numeric
@@ -118,11 +146,11 @@ if st.button("Predict Salary"):
             if col in MODEL_COLUMNS:
                 input_df[col] = 1
 
-    # FINAL ALIGNMENT
+    # Final alignment
     input_df = input_df.reindex(columns=MODEL_COLUMNS, fill_value=0)
     input_df = input_df.astype(float)
 
-    # 🔥 IMPORTANT: DO NOT use .to_numpy()
+    # Predict
     pred = model.predict(input_df)[0]
 
     st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
