@@ -11,43 +11,51 @@ def load_model():
 
 model = load_model()
 
-# ================================
-# UI
-# ================================
 st.title("💼 Salary Predictor")
 
-# Numeric
-exp = st.slider("Work Experience", 0, 50, 5)
-code = st.slider("Years Coding", 0, 50, 7)
+# ================================
+# INPUTS (RAW FEATURES ONLY)
+# ================================
+
+workexp = st.slider("Work Experience", 0, 50, 5)
+yearscode = st.slider("Years Coding", 0, 50, 7)
 age = st.slider("Age", 15, 75, 30)
 
-# RAW categorical inputs
 country = st.text_input("Country", "India")
 devtype = st.text_input("Developer Role", "Developer, full-stack")
-ed = st.text_input("Education", "Bachelor’s degree")
-org = st.text_input("Company Size", "20 to 99 employees")
-remote = st.selectbox("Remote Work", ["Remote", "Hybrid", "In-person"])
-emp = st.selectbox("Employment", ["Employed", "Student", "Freelancer"])
+edlevel = st.text_input("Education Level", "Bachelor’s degree")
+orgsize = st.text_input("Company Size", "20 to 99 employees")
+
+remotework = st.selectbox(
+    "Remote Work",
+    ["Remote", "Hybrid", "In-person"]
+)
+
+employment = st.selectbox(
+    "Employment Type",
+    ["Employed", "Student", "Freelancer", "Not employed"]
+)
 
 # ================================
 # PREDICTION
 # ================================
 if st.button("Predict Salary"):
 
-    # 👉 RAW INPUT ONLY (NO ONE-HOT)
+    # EXACT STRUCTURE MODEL EXPECTS
     input_df = pd.DataFrame({
         "Country": [country],
-        "WorkExp": [float(exp)],
-        "YearsCode": [float(code)],
+        "WorkExp": [float(workexp)],
+        "YearsCode": [float(yearscode)],
         "DevType": [devtype],
-        "EdLevel": [ed],
-        "OrgSize": [org],
+        "EdLevel": [edlevel],
+        "OrgSize": [orgsize],
         "Age": [float(age)],
-        "RemoteWork": [remote],
-        "Employment": [emp]
+        "RemoteWork": [remotework],
+        "Employment": [employment]
     })
 
-    # Predict
-    pred = model.predict(input_df)[0]
-
-    st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
+    try:
+        pred = model.predict(input_df)[0]
+        st.success(f"💰 Estimated Salary: ${pred:,.2f}")
+    except Exception as e:
+        st.error(f"Error: {e}")
