@@ -3,15 +3,17 @@ import joblib
 import pandas as pd
 
 # ================================
-# LOAD MODEL + COLUMNS
+# LOAD MODEL
 # ================================
 @st.cache_resource
-def load_artifacts():
+def load_model():
     model = joblib.load("salary_model_compressed.joblib")
-    columns = joblib.load("model_columns.joblib")
-    return model, columns
+    return model
 
-model, MODEL_COLUMNS = load_artifacts()
+model = load_model()
+
+# 🔥 IMPORTANT: get exact feature names from model
+MODEL_COLUMNS = model.get_booster().feature_names
 
 # ================================
 # HELPER FUNCTION
@@ -19,7 +21,7 @@ model, MODEL_COLUMNS = load_artifacts()
 def extract(prefix):
     return sorted([c.replace(f"{prefix}_", "") for c in MODEL_COLUMNS if c.startswith(f"{prefix}_")])
 
-# Extract options
+# Extract dropdown options
 countries = extract("Country")
 ed_levels = extract("EdLevel")
 org_sizes = extract("OrgSize")
@@ -36,7 +38,7 @@ webframes = extract("WebframeHaveWorkedWith")
 # ================================
 # UI
 # ================================
-st.title("💼 Salary Predictor")
+st.title("💼 Advanced Salary Predictor")
 
 exp = st.slider("Work Experience", 0, 50, 5)
 code = st.slider("Years Coding", 0, 50, 7)
@@ -59,11 +61,11 @@ plat = st.multiselect("Platforms", platforms)
 web = st.multiselect("Web Frameworks", webframes)
 
 # ================================
-# PREDICT
+# PREDICTION
 # ================================
 if st.button("Predict Salary"):
 
-    # Create full feature vector
+    # Create exact feature vector
     input_df = pd.DataFrame(0, index=[0], columns=MODEL_COLUMNS)
 
     # Numeric
@@ -82,7 +84,7 @@ if st.button("Predict Salary"):
     if "Age" in MODEL_COLUMNS:
         input_df["Age"] = float(age)
 
-    # One-hot encoding (CRITICAL)
+    # One-hot encoding
     for feat, val in {
         "Country": country,
         "EdLevel": ed,
@@ -96,12 +98,12 @@ if st.button("Predict Salary"):
         if col in MODEL_COLUMNS:
             input_df[col] = 1
 
-    # IC/Manager
+    # IC / Manager
     if icpm == "People manager":
         if "ICorPM_People manager" in MODEL_COLUMNS:
             input_df["ICorPM_People manager"] = 1
 
-    # Multi-select
+    # Multi-select encoding
     multi_map = {
         "DevType": dev,
         "LanguageHaveWorkedWith": lang,
@@ -120,7 +122,7 @@ if st.button("Predict Salary"):
     input_df = input_df.reindex(columns=MODEL_COLUMNS, fill_value=0)
     input_df = input_df.astype(float)
 
-    # Predict
+    # 🔥 IMPORTANT: DO NOT use .to_numpy()
     pred = model.predict(input_df)[0]
 
     st.success(f"💰 Estimated Salary: ${pred:,.2f} USD")
